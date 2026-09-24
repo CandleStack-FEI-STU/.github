@@ -1,0 +1,61 @@
+name: No AI signs
+
+# Shared check, called as the first job of every repository's CI:
+#   uses: CandleStack-FEI-STU/.github/.github/workflows/no-ai-signs.yml@main
+# Fails when a new commit or the pull request title/body carries AI attribution:
+# AI co-author trailers, AI authors or committers, "Generated with ..." lines, session links.
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  no-ai-signs:
+    name: No AI signs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Check commits and pull request text
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          ai='(claude|anthropic|copilot|chatgpt|openai|gemini|cursor|codex|devin|aider)'
+          pattern="co-authored-by:.*$ai|^(author|committer): .*$ai|generated (with|by) .*($ai|\bai\b)|claude\.ai/code|claude-session|🤖"
+
+          if [[ -z $BASE || $BASE =~ ^0+$ ]]; then
+            range=("$HEAD" --not "origin/$DEFAULT_BRANCH")
+          else
+            range=("$(git merge-base "$BASE" "$HEAD")..$HEAD")
+          fi
+
+          found=0
+          for commit in $(git rev-list "${range[@]}"); do
+            text=$(git show -s --format='author: %an <%ae>%ncommitter: %cn <%ce>%n%B' "$commit")
+            if hits=$(grep -inE "$pattern" <<<"$text"); then
+              echo "::error::Commit ${commit:0:7} has AI signs:"
+              echo "$hits"
+              found=1
+            fi
+          done
+
+          if hits=$(printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -inE "$pattern"); then
+            echo "::error::The pull request title or description has AI signs:"
+            echo "$hits"
+            found=1
+          fi
+
+          if (( found )); then
+            echo "Remove the lines above (git commit --amend or git rebase -i, then force-push the branch)."
+            exit 1
+          fi
+          echo "No AI signs in $(git rev-list --count "${range[@]}") commit(s)."
