@@ -55,7 +55,7 @@ jobs:
           fi
 
           if (( found )); then
-            echo "Remove the lines above (git commit --amend or git rebase -i, then force-push the branch)."
+            echo "Remove them: edit the pull request title or description, or reword the commits (git rebase -i) and force-push."
             exit 1
           fi
           echo "No AI signs in $(git rev-list --count "${range[@]}") commit(s)."
