@@ -4,6 +4,10 @@ name: No AI signs
 #   uses: CandleStack-FEI-STU/.github/.github/workflows/no-ai-signs.yml@main
 # Fails when a new commit or the pull request title/body carries AI attribution:
 # AI co-author trailers, AI authors or committers, "Generated with ..." lines, session links.
+# For a tag push, a commit range against the event's "before" would see nothing (a new tag
+# reports it as all zeros, and the tagged commit is usually already on the default branch): the
+# tag's own message and tagger (if it is annotated) are checked instead, plus the commits since
+# the previous v* tag reachable from it, or its whole history if this is the first one.
 on:
   workflow_call:
 
@@ -19,6 +23,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          fetch-tags: true
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Check commits and pull request text
@@ -28,17 +33,33 @@ jobs:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           ai='(claude|anthropic|copilot|chatgpt|openai|gemini|cursor|codex|devin|aider)'
-          pattern="co-authored-by:.*$ai|^(author|committer): .*$ai|generated (with|by) .*($ai|\bai\b)|claude\.ai/code|claude-session|🤖"
+          pattern="co-authored-by:.*$ai|^(author|committer|tagger): .*$ai|generated (with|by) .*($ai|\bai\b)|claude\.ai/code|claude-session|🤖"
 
-          if [[ -z $BASE || $BASE =~ ^0+$ ]]; then
+          found=0
+
+          if [[ $REF_TYPE == tag ]]; then
+            tag_text=$(git for-each-ref "refs/tags/$REF_NAME" --format='%(contents)%0atagger: %(taggername) %(taggeremail)')
+            if hits=$(grep -inE "$pattern" <<<"$tag_text"); then
+              echo "::error::Tag $REF_NAME has AI signs:"
+              echo "$hits"
+              found=1
+            fi
+            previous=$( (git describe --tags --match 'v*' --abbrev=0 "$HEAD^" 2>/dev/null) || true)
+            if [[ -n $previous ]]; then
+              range=("$previous..$HEAD")
+            else
+              range=("$HEAD")
+            fi
+          elif [[ -z $BASE || $BASE =~ ^0+$ ]]; then
             range=("$HEAD" --not "origin/$DEFAULT_BRANCH")
           else
             range=("$(git merge-base "$BASE" "$HEAD")..$HEAD")
           fi
 
-          found=0
           for commit in $(git rev-list "${range[@]}"); do
             text=$(git show -s --format='author: %an <%ae>%ncommitter: %cn <%ce>%n%B' "$commit")
             if hits=$(grep -inE "$pattern" <<<"$text"); then
