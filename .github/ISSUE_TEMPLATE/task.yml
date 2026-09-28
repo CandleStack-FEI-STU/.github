@@ -1,0 +1,61 @@
+name: Task
+description: A piece of work one person can finish in a sprint.
+labels: [task]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in every required field: only a task that is
+        [ready](https://github.com/CandleStack-FEI-STU/.github/blob/main/CONTRIBUTING.md#definition-of-ready)
+        goes into a sprint.
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: The goal in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: A checklist a reviewer can verify, one item per line.
+      placeholder: |
+        - [ ] `GET /api/x` answers 404 with the `not-found` problem
+        - [ ] A unit test covers the unknown symbol
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What this task does not do, so it stays small.
+    validations:
+      required: true
+  - type: textarea
+    id: where-to-start
+    attributes:
+      label: Where to start
+      description: The files to change, and existing code to copy as an example.
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: Anything bigger than M is split into sub-issues first.
+      options:
+        - S (a few hours)
+        - M (1-2 days)
+    validations:
+      required: true
+  - type: input
+    id: area
+    attributes:
+      label: Area
+      description: e.g. backend, frontend, infra, website, design.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Links, mockups, decisions, anything else that helps.

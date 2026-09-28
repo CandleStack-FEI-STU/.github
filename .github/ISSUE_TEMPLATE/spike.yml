@@ -1,0 +1,39 @@
+name: Spike
+description: Timeboxed research that answers one question.
+labels: [spike]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: The one question this spike answers.
+    validations:
+      required: true
+  - type: textarea
+    id: good-answer
+    attributes:
+      label: What a good answer contains
+      description: e.g. the options compared, their limits and costs, a recommendation.
+    validations:
+      required: true
+  - type: dropdown
+    id: timebox
+    attributes:
+      label: Timebox
+      description: Stop when it runs out and write down what you found.
+      options:
+        - Half a day
+        - 1 day
+        - 2 days
+    validations:
+      required: true
+  - type: dropdown
+    id: output
+    attributes:
+      label: Output
+      options:
+        - A comment on this issue
+        - An ADR or a page in docs/
+        - A prototype branch with a summary
+    validations:
+      required: true
