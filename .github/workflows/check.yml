@@ -14,3 +14,7 @@ jobs:
   # breaks it fails here before it reaches main, which every other repository calls.
   no-ai-signs:
     uses: ./.github/workflows/no-ai-signs.yml
+
+  # The description closes an issue ("Closes #N"). Same local path, for the same reason.
+  linked-issue:
+    uses: ./.github/workflows/linked-issue.yml
