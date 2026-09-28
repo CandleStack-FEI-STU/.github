@@ -1,0 +1,14 @@
+# Hooks that other repositories use through pre-commit, pinned to a commit SHA of this repository:
+#   - repo: https://github.com/CandleStack-FEI-STU/.github
+#     rev: <sha>
+#     hooks:
+#       - id: comments
+- id: comments
+  name: check comments
+  description: TODOs link an issue, no commented-out code; warns on changelog comments and long functions.
+  entry: scripts/check_comments.py
+  language: script
+  types: [text]
+  files: \.(py|pyi|ts|tsx|mts|cts|js|jsx|mjs|cjs|astro|css|html|sh|bash|ya?ml|toml|cfg|ini)$|(^|/)Dockerfile[^/]*$
+  # Shows the warnings too, which never fail the hook.
+  verbose: true
