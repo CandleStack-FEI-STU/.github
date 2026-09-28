@@ -29,3 +29,9 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 -m unittest discover -s tests -v
+
+  # The title and branch follow the conventions; a warning when the pull request is large.
+  pr-hygiene:
+    uses: ./.github/workflows/pr-hygiene.yml
+    permissions:
+      pull-requests: read
