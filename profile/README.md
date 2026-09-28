@@ -37,3 +37,5 @@ Every run produces an experiment with a unified set of metrics and visualization
 | [candlestack](https://github.com/CandleStack-FEI-STU/candlestack) | Application monorepo |
 | [website](https://github.com/CandleStack-FEI-STU/website) | Project website at [candlestack.tech](https://candlestack.tech) |
 | [design](https://github.com/CandleStack-FEI-STU/design) | UI mockups and brand assets |
+| [ops](https://github.com/CandleStack-FEI-STU/ops) | Uptime checks and the team status page at ops.candlestack.tech (team only) |
+| [.github](https://github.com/CandleStack-FEI-STU/.github) | Organization profile, security policy and shared workflows |
