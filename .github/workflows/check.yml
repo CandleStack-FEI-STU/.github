@@ -1,7 +1,9 @@
 name: Check
 
+# `edited` too: editing the title or description checks the new text.
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
