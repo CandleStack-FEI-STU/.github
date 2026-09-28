@@ -1,0 +1,42 @@
+name: Linked issue
+
+# Shared check, called from every repository's pull request workflow:
+#   uses: CandleStack-FEI-STU/.github/.github/workflows/linked-issue.yml@main
+# Fails when the pull request description closes no issue: a closing keyword (close, fix,
+# resolve and their forms) followed by #N, owner/repo#N or an issue URL, as GitHub links them.
+# HTML comments (the pull request template's hints) do not count. The tech lead and Dependabot
+# are exempt. Reads only the event payload: no checkout, no token.
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  linked-issue:
+    name: Linked issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check the pull request description
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          case $AUTHOR in
+            ArsenLabovich | 'dependabot[bot]')
+              echo "::notice::$AUTHOR is exempt from linking an issue."
+              exit 0
+              ;;
+          esac
+
+          name='[A-Za-z0-9_.-]+'
+          pattern="\b(close[sd]?|fix(e[sd])?|resolve[sd]?):?[[:space:]]+(#[0-9]+|$name/$name#[0-9]+|https://github\.com/$name/$name/issues/[0-9]+)\b"
+          text=$(printf '%s' "$PR_BODY" | perl -0pe 's/<!--.*?-->//gs')
+
+          if hits=$(grep -ioE "$pattern" <<<"$text"); then
+            echo "Linked: $(paste -sd, <<<"$hits")"
+            exit 0
+          fi
+          echo "::error::The pull request description links no issue. Add a line such as \"Closes #12\" (or Fixes/Resolves, or the issue's URL) to the description; this check runs again when you save it."
+          exit 1

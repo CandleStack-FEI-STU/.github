@@ -8,4 +8,5 @@ Organization-wide files for [CandleStack-FEI-STU](https://github.com/CandleStack
 - `CONTRIBUTING.md`: how the team works, with the Definition of Ready and of Done; shown for every repository without its own.
 - `.github/ISSUE_TEMPLATE/`: the issue forms (task, bug, spike) of every repository without its own.
 - `.github/workflows/no-ai-signs.yml`: shared check that every repository runs as the first CI job.
-- `.github/workflows/check.yml`: runs this repository's own copy of that check on its pull requests.
+- `.github/workflows/linked-issue.yml`: shared check that the pull request description closes an issue ("Closes #N"); the tech lead and Dependabot are exempt.
+- `.github/workflows/check.yml`: runs this repository's own copy of both checks on its pull requests.

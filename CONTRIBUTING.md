@@ -24,7 +24,8 @@ Only a ready issue moves from Backlog to To Do, into a sprint. It is ready when:
 
 An issue is done when its pull request is merged, and the pull request:
 
-- links the issue with "Closes #N" in its description;
+- links the issue with "Closes #N" in its description (the required check
+  `linked-issue / Linked issue`);
 - has green CI;
 - adds or updates tests at the lowest level that proves the change;
 - updates the docs the change affects;
