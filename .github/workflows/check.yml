@@ -8,5 +8,7 @@ permissions:
 
 jobs:
   # No AI attribution in commits or the pull request. Nothing else to build here.
+  # The local path runs the pull request's own copy of the shared check, so a change that
+  # breaks it fails here before it reaches main, which every other repository calls.
   no-ai-signs:
-    uses: CandleStack-FEI-STU/.github/.github/workflows/no-ai-signs.yml@main
+    uses: ./.github/workflows/no-ai-signs.yml
