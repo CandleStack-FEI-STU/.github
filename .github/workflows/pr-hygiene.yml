@@ -49,13 +49,13 @@ jobs:
             fi
             first=${TITLE%% *}
             first=${first%:}
-            case $first in
+            case ${first^} in
               Added | Adds | Adding) verb=Add ;;
               Fixed | Fixes | Fixing) verb=Fix ;;
               Updated | Updates | Updating) verb=Update ;;
               Removed | Removes) verb=Remove ;;
               Changed | Changes) verb=Change ;;
-              WIP) verb= ;;
+              WIP | Wip) verb= ;;
               *) verb=- ;;
             esac
             if [[ -z $verb ]]; then
