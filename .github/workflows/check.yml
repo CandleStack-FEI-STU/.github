@@ -18,3 +18,14 @@ jobs:
   # The description closes an issue ("Closes #N"). Same local path, for the same reason.
   linked-issue:
     uses: ./.github/workflows/linked-issue.yml
+
+  # Unit tests of the scripts that other repositories run through pre-commit.
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tests -v
