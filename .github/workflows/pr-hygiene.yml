@@ -1,0 +1,121 @@
+name: PR hygiene
+
+# Shared check, called from every repository's pull request workflow:
+#   uses: CandleStack-FEI-STU/.github/.github/workflows/pr-hygiene.yml@main
+# The caller grants `pull-requests: read` (for the file list) and re-runs it on `edited`.
+# "Title and branch" fails when the title is not a sentence-case imperative line of at most 72
+# characters, or the branch is not `<area>/<topic>`. "Size" only warns: above 1000 changed lines,
+# generated files excluded. No checkout; the title and branch reach the script through env.
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  title-and-branch:
+    name: Title and branch
+    if: github.event.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Check the title and the branch name
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          found=0
+          fail() {
+            echo "::error title=$1::$2"
+            found=1
+          }
+
+          if [[ $AUTHOR == 'dependabot[bot]' ]]; then
+            echo "Dependabot's title is exempt: $TITLE"
+          else
+            if [[ ! $TITLE =~ ^[A-Z] ]]; then
+              fail 'PR title' 'Start the title with a capital letter, e.g. "Add the candles endpoint".'
+            fi
+            if [[ $TITLE == *. ]]; then
+              fail 'PR title' 'Drop the trailing period from the title.'
+            fi
+            if (( ${#TITLE} > 72 )); then
+              fail 'PR title' "Shorten the title to 72 characters (it has ${#TITLE}): it becomes the commit subject."
+            fi
+            prefix='^[A-Za-z]+(\([^)]*\))?!?:'
+            if [[ $TITLE =~ $prefix ]]; then
+              fail 'PR title' "Drop the \"${BASH_REMATCH[0]}\" prefix: say what the change does, in sentence case."
+            fi
+            first=${TITLE%% *}
+            first=${first%:}
+            case ${first^} in
+              Added | Adds | Adding) verb=Add ;;
+              Fixed | Fixes | Fixing) verb=Fix ;;
+              Updated | Updates | Updating) verb=Update ;;
+              Removed | Removes) verb=Remove ;;
+              Changed | Changes) verb=Change ;;
+              WIP | Wip) verb= ;;
+              *) verb=- ;;
+            esac
+            if [[ -z $verb ]]; then
+              fail 'PR title' 'Drop "WIP": mark the pull request as a draft until it is ready.'
+            elif [[ $verb != - ]]; then
+              fail 'PR title' "Use the imperative: start with \"$verb\" instead of \"$first\"."
+            fi
+          fi
+
+          branch_pattern='^(dependabot/.+|[a-z]+/[a-z0-9][a-z0-9.-]*)$'
+          if [[ ! $BRANCH =~ $branch_pattern ]]; then
+            fail 'Branch name' "Name the branch <area>/<topic> in lowercase, e.g. backend/candles-endpoint (it is \"$BRANCH\"): git branch -m <new-name>, push it and open a new pull request."
+          fi
+
+          if (( found )); then
+            echo "Title: $TITLE"
+            echo "Edit the title and this check runs again."
+            exit 1
+          fi
+          echo "Title and branch are fine: \"$TITLE\" from $BRANCH."
+
+  size:
+    name: Size
+    if: github.event.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      # A warning only: this step never fails the job.
+      - name: Count the changed lines
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          limit=1000
+          generated='(^|/)(package-lock\.json|[^/]*\.lock|worker-configuration\.d\.ts)$|(^|/)fixtures/|(^|/)docs/openapi\.json$|^infra/(github|cloudflare|sentry)/'
+
+          if ! files=$(gh api --paginate "repos/$REPO/pulls/$NUMBER/files" --jq '.[] | "\(.additions + .deletions)\t\(.filename)"'); then
+            echo "::warning title=PR size::Could not list the changed files; the size was not checked."
+            exit 0
+          fi
+
+          total=0
+          skipped=0
+          while IFS=$'\t' read -r lines name; do
+            [[ -n $name ]] || continue
+            if [[ $name =~ $generated ]]; then
+              skipped=$((skipped + lines))
+            else
+              total=$((total + lines))
+            fi
+          done <<<"$files"
+
+          summary="$total changed lines ($skipped more in lockfiles, fixtures and generated snapshots, not counted)."
+          if (( total > limit )); then
+            echo "::warning title=Large pull request::$summary Above $limit: consider splitting it into smaller pull requests, one topic each."
+            printf '### Large pull request\n\n%s Above %s: consider splitting it into smaller pull requests, one topic each.\n' "$summary" "$limit" >>"$GITHUB_STEP_SUMMARY"
+          else
+            echo "$summary"
+          fi
