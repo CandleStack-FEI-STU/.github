@@ -1,0 +1,20 @@
+# Editor settings for the whole repository (https://editorconfig.org), as in candlestack.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+# Two trailing spaces are a line break in Markdown.
+trim_trailing_whitespace = false
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[{*.yaml,*.yml,*.json,*.jsonc,*.md,*.sh,*.html,*.css,*.js}]
+indent_style = space
+indent_size = 2

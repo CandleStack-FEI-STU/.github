@@ -1,11 +1,14 @@
 # Weekly update pull requests for the actions the workflows use, pinned to commit SHAs. Minor
-# and patch updates come together in one pull request; each major update comes alone.
+# and patch updates come together in one pull request; each major update comes alone. A release
+# waits 7 days first, so a compromised one is likely pulled before it reaches us.
 version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ["*"]

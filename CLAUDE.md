@@ -18,5 +18,6 @@ first CI job. See [README.md](README.md).
 
 ## Verify
 
-There is no build. Test the comment check with `python3 -m unittest discover -s tests`. CI runs
-those tests and this repository's copy of the shared checks on the pull request itself.
+There is no build. Test the comment check with `python3 -m unittest discover -s tests` and run
+the hooks with `uvx pre-commit run --all-files`. CI runs both and this repository's copy of the
+shared checks on the pull request itself.

@@ -9,7 +9,7 @@
 
 # CandleStack
 
-**Configurable pipeline for pattern analysis in financial time series**
+<p><strong>Configurable pipeline for pattern analysis in financial time series</strong></p>
 
 Team project · Faculty of Electrical Engineering and Information Technology, STU in Bratislava · 2026/2027
 
@@ -30,7 +30,7 @@ A user composes an experiment from three interchangeable layers and compares the
 
 Every run produces an experiment with a unified set of metrics and visualizations.
 
-### Repositories
+## Repositories
 
 | Repository | Description |
 | --- | --- |
