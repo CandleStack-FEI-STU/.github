@@ -1,11 +1,9 @@
 <div align="center">
 
-<!-- Logo: add profile/assets/logo-light.svg and logo-dark.svg, then uncomment the block below.
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/CandleStack-FEI-STU/.github/main/profile/assets/logo-dark.svg">
   <img alt="CandleStack" src="https://raw.githubusercontent.com/CandleStack-FEI-STU/.github/main/profile/assets/logo-light.svg" height="96">
 </picture>
--->
 
 # CandleStack
 
